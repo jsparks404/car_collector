@@ -1,0 +1,141 @@
+{% extends 'base.html' %} 
+{% block content %}
+<div class="detail__img">
+    <img src="{{car.img}}" alt="{{car.make}}" />
+</div>
+<div class="detail__name">
+    <h1 class="title">{{car.make}} {{car.model}}</h1>
+    <h4>{{car.price}}</h4>
+</div>
+{% for engine in car.engine.all %}
+<div class="engine_container">
+    <p>Designation: {{engine.designation}}</p>
+    <p>Displacement: {{engine.displacement}}</p>
+    <p>Induction: {{engine.induction}}</p>
+    <p>Configuration: {{engine.configuration}}</p>
+    <p>HP: {{engine.horsepower}}</p>
+    <p>Torque: {{engine.torque}}</p>
+</div>
+{% empty %}
+<article class="message">
+    <div class="message_empty">
+        <p>No engine information available</p>
+    </div>
+</article>
+{% endfor %}
+<hr />
+<div>
+    <h4>Compatible Tires:</h4>
+</div>
+{% for tire in tires %}
+<div class="tire_container">
+    <span> {{tire.brand}}</span>
+    
+    <span>
+            <!--   Here we are creating an anchor
+            tag that when clicked will hit our new
+            route and send a query to remove the song     -->
+            <a href="{% url 'tire_car_assoc' tire.pk car.pk %}?assoc=remove" class="button is-danger is-outlined">
+            <span class="icon is-small">
+                <i class="fas fa-times"></i>
+            </span>
+            </a>
+        </span>
+    
+</div>
+
+{% empty %}
+<div>
+    <p>No tire information available</p>
+</div>
+{% endfor %}
+<hr />
+<div class="detail__container">
+    <div class="buttons">
+        <a href="{% url 'car_update' car.pk %}" class="button is-info">
+            <span class="icon">
+                <i class="fas fa-edit">Edit</i>
+            </span>
+        </a>
+        <a href="{% url 'car_delete' car.pk%}" class="button is-danger">
+            <span class="icon">
+                <i class="fas fa-trash-alt">Del</i>
+            </span>
+        </a>
+    </div>
+    <!-- inside detail songs element below the header -->
+
+<!-- Here you can see the action we provided
+    is to the song_create route with the artist pk -->
+    <form class="mb-5" action="{% url 'engine_create' car.pk %}" method="post">
+        {% csrf_token %}
+        <div class="field has-addons">
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    name="designation"
+                    placeholder="Designation"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    name="displacement"
+                    placeholder="Displacement"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    name="induction"
+                    placeholder="Induction"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    name="configuration"
+                    placeholder="Configuration"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input
+                    class="input"
+                    type="number"
+                    name="horsepower"
+                    placeholder="Horsepower"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input
+                    class="input"
+                    type="text"
+                    name="torque"
+                    placeholder="Torque"
+                    required
+                />
+            </div>
+            <div class="control">
+                <input class="button is-primary" type="submit" value="Add Engine" />
+            </div>
+        </div>
+    </form>
+    
+    <!-- before the for loop for songs -->
+
+    <div class="detail__about">
+        <h4 class="title is-4">About</h4>
+        
+    </div>
+</div>
+
+{% endblock %}
