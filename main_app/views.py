@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.http import HttpResponse
 from .models import Car, Engine, Tire
@@ -15,11 +15,7 @@ from django.urls import reverse
 # Create your views here.
 class Home(TemplateView):
     template_name = "home.html"
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["tires"] = Tire.objects.all()
-        return context
-#...
+    
 #...
 class About(TemplateView):
     template_name = "about.html"
@@ -67,6 +63,7 @@ class CarDetail(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
         context["tires"] = Tire.objects.all()
         return context
 
@@ -103,12 +100,16 @@ class EngineCreate(View):
 
 @method_decorator(login_required, name='dispatch')
 class TireCarAssoc(View):
-    def post(self, request, pk, car_pk):
+    def get(self, request, pk, car_pk):
         assoc = request.GET.get("assoc")
+        print(assoc)
         if assoc == "remove":
-            Tire.objecs.get(pk=pk).songs.remove(song_pk)
+            print(pk)
+            print(car_pk)
+
+            Tire.objects.get(pk=pk).cars.remove(car_pk)
         if assoc == "add":
-            Tire.objects.get(pk=pk).songs.add(car_pk)
+            Tire.objects.get(pk=pk).cars.add(car_pk)
         return redirect('home')
 
 
