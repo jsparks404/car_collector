@@ -1,3 +1,8 @@
+# Auth
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.views import View
 from django.http import HttpResponse
@@ -6,6 +11,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic import DetailView
 #...
 from django.views.generic.base import TemplateView
+from django.urls import reverse
 # Create your views here.
 class Home(TemplateView):
     template_name = "home.html"
@@ -19,6 +25,7 @@ class About(TemplateView):
     template_name = "about.html"
 
 
+@method_decorator(login_required, name='dispatch')
 class CarList(TemplateView):
     template_name = "car_list.html"
 
@@ -28,19 +35,32 @@ class CarList(TemplateView):
         
         print(make)
         if make != None:
-            context["cars"] = Car.objects.filter(make__icontains=make) 
+            context["cars"] = Car.objects.filter(
+                make__icontains=make, user=self.request.user)
+            context["header"] = f"Searching for {make}"
         else:
-            context["cars"] = Car.objects.all()
+            context["cars"] = Car.objects.filter(user=self.request.user)
         return context
 
 
+@method_decorator(login_required, name='dispatch')
 class CarCreate(CreateView):
     model = Car
     fields = ['make', 'model', 'img', 'trim', 'price']
     template_name = "car_create.html"
     success_url = "/cars/"
 
+    # This is our new method that will add the user into our submitted form
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super(CarCreate, self).form_valid(form)
 
+    def get_success_url(self):
+        print(self.kwargs)
+        return reverse('car_detail', kwargs={'pk': self.object.pk})
+
+
+@method_decorator(login_required, name='dispatch')
 class CarDetail(DetailView):
     model = Car
     template_name = "car_detail.html"
@@ -50,6 +70,8 @@ class CarDetail(DetailView):
         context["tires"] = Tire.objects.all()
         return context
 
+
+@method_decorator(login_required, name='dispatch')
 class CarUpdate(UpdateView):
     model = Car
     fields = ['make', 'model', 'img', 'trim', 'price']
@@ -57,12 +79,15 @@ class CarUpdate(UpdateView):
     success_url = "/cars/"
 
 
+
+@method_decorator(login_required, name='dispatch')
 class CarDelete(DeleteView):
     model = Car
     template_name = "car_delete_confirmation.html"
     success_url = '/cars/'
 
 
+@method_decorator(login_required, name='dispatch')
 class EngineCreate(View):
     def post(self, request, pk):
         designation = request.POST.get('designation')
@@ -76,6 +101,7 @@ class EngineCreate(View):
         return redirect('car_detail', pk=pk)
 
 
+@method_decorator(login_required, name='dispatch')
 class TireCarAssoc(View):
     def post(self, request, pk, car_pk):
         assoc = request.GET.get("assoc")
@@ -84,3 +110,21 @@ class TireCarAssoc(View):
         if assoc == "add":
             Tire.objects.get(pk=pk).songs.add(car_pk)
         return redirect('home')
+
+
+class Signup(View):
+    # show a form to fill out
+    def get(self, request):
+        form = UserCreationForm()
+        context = {"form": form}
+        return render(request, "registration/signup.html", context)
+    # on form submit, validate the form and login the user.
+    def post(self, request):
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("artist_list")
+        else:
+            context = {"form": form}
+            return render(request, "registration/signup.html", context)
