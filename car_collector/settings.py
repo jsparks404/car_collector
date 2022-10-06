@@ -1,6 +1,5 @@
 import os
-from dotenv import load_dotenv
-load_dotenv()
+
 """
 Django settings for car_collector project.
 
@@ -23,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+SECRET_KEY = 'django-insecure-y+&!++2png!_1$7x-#-*r3d+pqo7t(!t0^_yw%t8fs3c27hl0='
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
